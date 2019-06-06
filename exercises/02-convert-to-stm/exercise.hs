@@ -4,13 +4,11 @@ import Control.Concurrent.STM
 
 main :: IO ()
 main = do
-  -- You'll need to change some function names, and add in some calls to
-  -- atomically
+  var <- newTVarIO "Hello"
 
-  var <- newTVar "Hello"
+  newVal <- atomically $ do
+    origVal <- readTVar var
+    writeTVar var (origVal ++ " World")
+    readTVar var
 
-  origVal <- readTVar var
-  writeIORef var (origVal ++ " World")
-
-  newVal <- readIORef var
   putStrLn newVal
