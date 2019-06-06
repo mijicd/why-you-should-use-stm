@@ -9,11 +9,17 @@ import Test.Hspec
 -- Make it compile and the tests pass, without changing the imports or main
 
 tryTakeTMVar :: TMVar a -> STM (Maybe a)
-tryTakeTMVar tmvar = _
+tryTakeTMVar tmvar = full <|> empty
+  where
+    full = Just <$> takeTMVar tmvar
+    empty = pure Nothing
 
 -- | Returns True if put was successful, False otherwise
 tryPutTMVar :: TMVar a -> a -> STM Bool
-tryPutTMVar tmvar a = _
+tryPutTMVar tmvar a = full <|> empty
+  where
+    full = True <$ putTMVar tmvar a
+    empty = pure False
 
 main :: IO ()
 main = hspec $ do
