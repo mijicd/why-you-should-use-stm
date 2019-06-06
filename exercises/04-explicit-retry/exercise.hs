@@ -18,8 +18,7 @@ import Control.Monad (forever)
 -- | Add 5 to the variable every 100ms
 payAlice :: TVar Int -> IO ()
 payAlice aliceVar = forever $ do
-  aliceOrig <- atomically $ readTVar aliceVar
-  atomically $ writeTVar aliceVar $! aliceOrig + 5
+  atomically $ modifyTVar' aliceVar (+ 5)
   threadDelay 100000 -- 100ms, threadDelay takes nanoseconds
 
 -- | Transfer 40 from Alice to Bob.
@@ -27,16 +26,12 @@ transfer
   :: TVar Int -- ^ Alice
   -> TVar Int -- ^ Bob
   -> IO ()
-transfer aliceVar bobVar = do
+transfer aliceVar bobVar = atomically $ do
   let amt = 40
   aliceOrig <- readTVar aliceVar
-  if aliceOrig >= amt
-    then pure ()
-    else pure ()
-
+  check $ aliceOrig >= amt
   writeTVar aliceVar $ aliceOrig - amt
-  bobOrig <- readTVar bobVar
-  writeTVar bobVar $ bobOrig + amt
+  modifyTVar' bobVar (+ amt)
 
 main :: IO ()
 main = do
