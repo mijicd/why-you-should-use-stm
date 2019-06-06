@@ -10,5 +10,4 @@ main = do
   origVal <- readIORef ref
   writeIORef ref (origVal ++ " World")
 
-  -- This line won't compile, fix it!
-  putStrLn ref
+  readIORef ref >>= putStrLn
