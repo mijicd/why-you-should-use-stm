@@ -5,4 +5,4 @@
 main :: IO ()
 main = do
   putStrLn "Hello World"
-  putStrLn "Goodbye!
+  putStrLn "Goodbye!"
