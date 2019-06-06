@@ -13,9 +13,12 @@ worker f queue = loop
   where
     loop = do
       -- Quite a few things are wrong here
-      a <- readTBMQueue queue
-      f a
-      loop
+      ma <- atomically $ readTBMQueue queue
+      case ma of
+        Nothing -> pure ()
+        Just a -> do
+          f a
+          loop
 
 workers :: Int -> (a -> IO ()) -> TBMQueue a -> IO ()
 workers count f queue = replicateConcurrently_ count (worker f queue)
@@ -23,7 +26,8 @@ workers count f queue = replicateConcurrently_ count (worker f queue)
 pooledMapConcurrently_ :: Int -> (a -> IO ()) -> [a] -> IO ()
 pooledMapConcurrently_ count f inputs = do
   queue <- atomically $ newTBMQueue $ count * 2
-  let filler = pure () -- I don't think this is what you want
+  let filler = for_ inputs $ \input -> atomically $ writeTBMQueue queue input
+
   concurrently_
     (filler `finally` atomically (closeTBMQueue queue))
     (workers count f queue)
