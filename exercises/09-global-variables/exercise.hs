@@ -4,7 +4,7 @@ import Control.Concurrent.STM
 import System.IO.Unsafe -- yeah baby!
 
 counter :: TVar Int
-counter = unsafePerformIO $ atomically $ newTVar 0
+counter = unsafePerformIO $ newTVarIO 0
 {-# NOINLINE counter #-} -- very important!
 
 main :: IO ()
