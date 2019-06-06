@@ -18,23 +18,23 @@ takeTMVar :: TMVar a -> STM a
 takeTMVar (TMVar var) = do
   x <- readTVar var
   case x of
-    Nothing -> error "What should we do if there's nothing here?"
+    Nothing -> retry
     Just a -> do
       writeTVar var Nothing
-      error "do something with this:" a
+      pure a
 
 tryTakeTMVar :: TMVar a -> STM (Maybe a)
 tryTakeTMVar (TMVar var) = do
   x <- readTVar var
-  -- Make sure the var is empty after this, you'll need to add something here
+  writeTVar var Nothing
   pure x
 
 putTMVar :: TMVar a -> a -> STM ()
 putTMVar (TMVar var) a = do
   x <- readTVar var
   case x of
-    Nothing -> writeTVar var $ a -- yup, this won't compile, the $ is a hint
-    Just _ -> error "What should we do if there's soemthing here?"
+    Nothing -> writeTVar var $ pure a
+    Just _ -> retry
 
 -- | Returns True if put was successful, False otherwise
 tryPutTMVar :: TMVar a -> a -> STM Bool
@@ -43,8 +43,8 @@ tryPutTMVar (TMVar var) a = do
   case x of
     Nothing -> do
       writeTVar var (Just a)
-      pure undefined
-    Just _ -> pure undefined
+      pure True
+    Just _ -> pure False
 
 main :: IO ()
 main = hspec $ do
